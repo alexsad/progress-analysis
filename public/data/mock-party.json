@@ -1,0 +1,87 @@
+[
+	{
+		"id": "123",
+		"scope": "public",
+		"maxPlayers": 4,
+		"maxScore": 24,
+		"idStoreTeller": "1456s6ss6s",
+		"password": "s5a45",
+		"requiredHint": true,
+		"status": "open",
+		"maxPlayerTime": 20,
+		"freeCards": {
+			"456664ss": {
+				"id": "456664ss",
+				"url": "http:4564ss64666"
+			}
+		},
+		"players": {
+			"sss456664ss":{
+				"id": "sss456664ss",
+				"name": "shsuoso",
+				"photeUrl":"http://e7w8979w7989w/77977w8997797/87897",
+				"score": 0,
+				"dash": [
+					{
+						"id": "sss456664ss",
+						"url": "http:4564ss64666"
+					}
+				]
+			}
+		},
+		"picks": [
+			{
+				"idCard": "1554",
+				"idPlayer": "4556",
+				"storeTeller": false,
+				"betUsers": [
+					"s4879",
+					"48789",
+					"45987"
+				]
+			},
+			{
+				"idCard": "1224",
+				"idPlayer": "4556",
+				"storeTeller": true,
+				"betUsers": [
+					"wswe9",
+					"11189",
+					"42227"
+				]
+			}
+		]
+	},
+	{
+		"id": "123aswww",
+		"scope": "private",
+		"maxPlayers": 5,
+		"maxScore": 24,
+		"idStoreTeller": "1456s6ss6s",
+		"password": "s5a45",
+		"requiredHint": true,
+		"status": "waiting",
+		"maxPlayerTime": 20,
+		"freeCards": [
+			{
+				"id": "456664ss",
+				"url": "http:4564ss64666"
+			}
+		],
+		"players": [
+			{
+				"id": "sss456664ss",
+				"name": "shsuoso",
+				"photeUrl":"http://e7w8979w7989w/77977w8997797/87897",
+				"score": 0,
+				"dash": [
+					{
+						"id": "sss456664ss",
+						"url": "http:4564ss64666"
+					}
+				]
+			}
+		],
+		"picks": []
+	}
+]

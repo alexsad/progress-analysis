@@ -1,0 +1,113 @@
+[
+    {
+        "id": "1",
+        "description": "Listen",
+        "name": "Listen",
+        "tools": [
+            {
+                "id": "1_1",
+                "description": "Music"
+            },
+            {
+                "id": "1_2",
+                "description": "Podcast"
+            },
+            {
+                "id": "1_3",
+                "description": "EBook"
+            },
+            {
+                "id": "1_4",
+                "description": "TV-Show (no legend)"
+            },
+            {
+                "id": "1_5",
+                "description": "EBook"
+            },
+            {
+                "id": "1_6",
+                "description": "Dialog"
+            }
+        ]
+    },
+    {
+        "id": "2",
+        "description": "Read",
+        "name": "Read",
+        "tools": [
+            {
+                "id": "2_1",
+                "description": "Article"
+            },
+            {
+                "id": "2_2",
+                "description": "Book"
+            },
+            {
+                "id": "2_3",
+                "description": "TV Show (with legend)"
+            },
+            {
+                "id": "2_4",
+                "description": "Dialog"
+            }
+        ]
+    },
+    {
+        "id": "3",
+        "description": "Speak",
+        "name": "Speak",
+        "tools": [
+            {
+                "id": "3_1",
+                "description": "Conversation"
+            },
+            {
+                "id": "3_2",
+                "description": "Voice Service(like google)"
+            },
+            {
+                "id": "3_3",
+                "description": "Lecture"
+            },
+            {
+                "id": "3_4",
+                "description": "Record"
+            },{
+                "id": "3_5",
+                "description": "Speak speed"
+            },
+            {
+                "id": "3_6",
+                "description": "Music"
+            }
+        ]
+    },
+    {
+        "id": "4",
+        "description": "Write",
+        "name": "Write",
+        "tools": [
+            {
+                "id": "4_1",
+                "description": "Dialogs (chat)"
+            },
+            {
+                "id": "4_2",
+                "description": "Message (e-mail)"
+            },
+            {
+                "id": "4_3",
+                "description": "Text (descritive)"
+            },
+            {
+                "id": "4_4",
+                "description": "Daily"
+            },
+            {
+                "id": "4_5",
+                "description": "Spelling"
+            }
+        ]
+    }
+]
