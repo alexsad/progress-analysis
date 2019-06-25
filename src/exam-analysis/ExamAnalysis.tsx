@@ -9,7 +9,6 @@ import { Radar, RadarChart, PolarGrid, Legend, PolarAngleAxis, PolarRadiusAxis, 
 import { Exam, useExam } from '../stores/ExamStore';
 import { Skill } from '../stores/SkillStore';
 
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     iconStyle: {
@@ -35,7 +34,7 @@ const Head = () => {
         <AppBar position="fixed" color="inherit">
             <Toolbar>
                 <Avatar>
-                    <Icon>face</Icon>
+                    <Icon>insert_chart</Icon>
                 </Avatar>
 
                 <Typography style={{ flexGrow: 1, color:"#efefef", paddingLeft:"4px"}} variant="subtitle2">
@@ -61,7 +60,6 @@ const Head = () => {
                 >
                     <Icon className={classes.iconStyle}>share</Icon>
                 </IconButton>
-
             </Toolbar>
         </AppBar>
     )

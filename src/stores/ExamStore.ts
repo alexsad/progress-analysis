@@ -47,7 +47,8 @@ const useExam = (skills: ISkill[]) => {
                 
                 const data:IExame[] = JSON.parse(localStorage.getItem('exams') || '[]');
 
-                data.sort((currExam, nextExam) => currExam.date - nextExam.date);
+                // data.sort((currExam, nextExam) => currExam.date - nextExam.date);
+                data.sort((currExam, nextExam) => nextExam.date - currExam.date);
                 
                 const getScoreByIdSkill = (countTools: number, snapshot:{[key:string]:number}) => {
                     const baseCalc = 100 / countTools;
@@ -68,6 +69,29 @@ const useExam = (skills: ISkill[]) => {
                     };
                 } = {};
 
+                for(let x = data.length - 1; x > -1 ; x-- ){
+                    const exam = data[x];
+
+                    skills.forEach(({id}) => {
+                        virtualTests[id] = virtualTests[id] || {};
+                        exam
+                            .tests
+                            .filter((test) => test.idSkill === id).forEach(test => {
+                                virtualTests[id][test.idTool] = test.level;
+                            });
+                    });
+
+                    skills.forEach(({id, tools}) => {
+                        const exams1Res = Math
+                                            .trunc(
+                                                getScoreByIdSkill(tools.length, virtualTests[id])
+                                            );
+                        
+                        (exam.scores as any)[id] = exams1Res;
+                    });
+                }
+
+                /*
                 data.forEach((exam) => {
                     skills.forEach(({id}) => {
                         virtualTests[id] = virtualTests[id] || {};
@@ -87,11 +111,12 @@ const useExam = (skills: ISkill[]) => {
                         (exam.scores as any)[id] = exams1Res;
                     });
                 });
+                */
 
                 // data.reverse();
-                data.sort((currExam, nextExam) => nextExam.date - currExam.date);
+                // data.sort((currExam, nextExam) => nextExam.date - currExam.date);
 
-                console.log(data);
+                // console.log(data);
 
                 setExams([...data]);
             }, 400);
