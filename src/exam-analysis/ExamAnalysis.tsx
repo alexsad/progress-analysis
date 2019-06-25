@@ -3,11 +3,12 @@ import Avatar from '@material-ui/core/Avatar';
 import { Link } from 'react-router-dom';
 import Container from '@material-ui/core/Container';
 import AppBar from '@material-ui/core/AppBar';
-import { Toolbar, Typography, IconButton, Icon } from '@material-ui/core';
+import { Toolbar, Typography, IconButton, Icon, Button, Box } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Radar, RadarChart, PolarGrid, Legend, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { Exam, useExam } from '../stores/ExamStore';
 import { Skill } from '../stores/SkillStore';
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,7 +49,7 @@ const Head = () => {
                     to="/exam/add"
                     component={Link}
                 >
-                    <Icon className={classes.iconStyle}>add</Icon>
+                    <Icon className={classes.iconStyle}>cloud_download</Icon>
                 </IconButton>
 
                 <IconButton
@@ -107,6 +108,17 @@ const Body = () => {
                             </ResponsiveContainer>
                         )}
                     </Exam.Consumer>
+                    <Box position="absolute" justifyContent="center" alignItems="center" display="flex" style={{bottom:16, width:'100%'}}>
+                        <Button
+                            variant="contained" 
+                            to="/exam/add"
+                            component={Link}
+                            size="small"
+                        >
+                            <Icon>add</Icon>
+                            Lang Exam
+                        </Button>
+                    </Box>
                 </section>
             </Container>
         </main>

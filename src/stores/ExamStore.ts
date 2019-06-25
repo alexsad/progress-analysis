@@ -47,6 +47,8 @@ const useExam = (skills: ISkill[]) => {
                 
                 const data:IExame[] = JSON.parse(localStorage.getItem('exams') || '[]');
 
+                data.sort((currExam, nextExam) => currExam.date - nextExam.date);
+                
                 const getScoreByIdSkill = (countTools: number, snapshot:{[key:string]:number}) => {
                     const baseCalc = 100 / countTools;
                     const levelLength = Object.keys(ELevel).length / 2;
@@ -86,10 +88,13 @@ const useExam = (skills: ISkill[]) => {
                     });
                 });
 
-                data.reverse();
+                // data.reverse();
+                data.sort((currExam, nextExam) => nextExam.date - currExam.date);
+
+                console.log(data);
 
                 setExams([...data]);
-            }, 2000);
+            }, 400);
         }
     }, [exams, skills]);
 
