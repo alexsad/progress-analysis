@@ -18,7 +18,7 @@
             },
             {
                 "id": "1_4",
-                "description": "TV-Show (no legend)"
+                "description": "TV-Show (no subtitle)"
             },
             {
                 "id": "1_5",
@@ -45,7 +45,7 @@
             },
             {
                 "id": "2_3",
-                "description": "TV Show (with legend)"
+                "description": "TV Show (with subtitle)"
             },
             {
                 "id": "2_4",
@@ -107,6 +107,29 @@
             {
                 "id": "4_5",
                 "description": "Spelling"
+            }
+        ]
+    },
+    {
+        "id": "5",
+        "description": "Grammar",
+        "name": "Grammar",
+        "tools": [
+            {
+                "id": "5_1",
+                "description": "Vocabulary"
+            },
+            {
+                "id": "5_2",
+                "description": "Construction"
+            },
+            {
+                "id": "5_3",
+                "description": "Agreement"
+            },
+            {
+                "id": "5_4",
+                "description": "Connectors"
             }
         ]
     }

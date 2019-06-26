@@ -1,32 +1,112 @@
-import React, { FunctionComponent, useState, useContext, useEffect } from 'react';
+import React, { FunctionComponent, useState, useContext, useEffect, ReactComponentElement } from 'react';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
-import Button from '@material-ui/core/Button';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
-import { Link, Redirect } from "react-router-dom";
 import { IExame, ELevel, IToolsLevel } from '../interfaces/i-exame';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
-import { Box, Theme, createStyles, Icon, Fab } from '@material-ui/core';
-import { Skill } from '../stores/SkillStore';
+import { Fab } from '@material-ui/core';
 import { ISkill } from '../interfaces/i-skill';
-import { makeStyles } from '@material-ui/styles';
+import Avatar from '@material-ui/core/Avatar';
+import { Link, Redirect } from 'react-router-dom';
+import Container from '@material-ui/core/Container';
+import AppBar from '@material-ui/core/AppBar';
+import { Toolbar, Typography, IconButton, Icon, Button, Box } from '@material-ui/core';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Exam, useExam } from '../stores/ExamStore';
+import { Skill } from '../stores/SkillStore';
+import LinkUI from '@material-ui/core/Link';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     selectEmpty: {
       marginTop: 16,
     },
+    iconStyle: {
+        color:'#efefef'
+    }
   }),
 );
 
-interface State extends IExame{
-    redirect?:boolean;
+
+const ExamAdd: FunctionComponent<{idExam:string}> & { Head: FunctionComponent<{idExam:string}>, Body: FunctionComponent<{idExam:string}>} = ({idExam}) => {
+    const {skills} = useContext(Skill);
+
+    return (
+       <Exam.Provider value={useExam(skills)}>
+            <ExamAdd.Head idExam={idExam}/>
+            <ExamAdd.Body idExam={idExam}/>
+        </Exam.Provider>
+    );
+}
+
+
+const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
+    const [redirect, setRedirect] = useState(false);
+    const classes = useStyles();
+    const {exams, remove} = useContext(Exam);
+
+    const exam = exams.find(({id}) => idExam === id);
+    
+    const dateFormated = (pdate:number) => {
+        const [year, month, day] = new Date(pdate).toISOString().substring(0,10).split('-');
+        return `${year}-${month}-${day}`;
+    };
+
+    const wrapperRemove = () => {
+        remove(idExam);
+        setRedirect(true);
+    }
+
+    return(
+        <AppBar position="fixed" color="inherit">
+            <Toolbar>
+                <LinkUI style={{marginRight:"4px"}} component={Link} to="/">
+                    <Icon className={classes.iconStyle}>keyboard_backspace</Icon>
+                </LinkUI>
+
+                <Avatar>
+                    <Icon>insert_chart</Icon>
+                </Avatar>
+
+                {!!exam && (
+                    <Typography style={{ flexGrow: 1, color:"#efefef", paddingLeft:"4px"}} variant="subtitle2">
+                        Exam of {dateFormated(exam.date)}
+                    </Typography>
+                )}
+
+                <IconButton
+                    color="default"
+                    aria-label="Open drawer"
+                    edge="end"
+                    onClick={wrapperRemove}
+                >
+                    <Icon className={classes.iconStyle}>delete_forever</Icon>
+                </IconButton>
+
+                <IconButton
+                    color="default"
+                    aria-label="Open drawer"
+                    edge="end"
+                    to={`/qr-code/url/${encodeURIComponent('/exam-analysis')}`}
+                    component={Link}
+                >
+                    <Icon className={classes.iconStyle}>done</Icon>
+                </IconButton>
+
+                {redirect && <Redirect to="/" />}
+
+            </Toolbar>
+        </AppBar>
+    )
+}
+
+interface State{
+    idExam?:string;
 }
 
 interface StateExam{
@@ -39,12 +119,10 @@ interface StateTestComponent extends FunctionComponent<IToolsLevel & {index:numb
 
 }
 
-const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
-
+const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam}) => {
+    const {exams, save} = useContext(Exam);
     const [date, setDate] = useState(new Date().getTime());
-    const [tests, setTests] = useState([] as IToolsLevel[]);
     const [redirect, setRedirect] = useState(false);
-    const {skills} = useContext(Skill);
         
     const changeDate = ({target:{value}}: React.ChangeEvent<HTMLInputElement>) => {
         const [year, month, day] = value.split('-');
@@ -78,16 +156,17 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
     }
 
     const delTestItem = (index:number) => {
+        console.log(index);
         setTests(oldtests => {
             oldtests.splice(index,1);
             return [...oldtests];
         });
     }
 
-    const addExamWrapper = (addExam:(exam:IExame)=>Promise<IExame>) => () => {
+    const addExamWrapper = () => {
         if(tests.length){
-            addExam({
-                id:`${new Date().getTime()}`,
+            save({
+                id:idExam as string,
                 date,
                 tests:tests,
                 scores:{}
@@ -97,50 +176,45 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
         }
     }
 
+    const exam = exams.find(({id}) => idExam === id) as IExame;
+    
+    const [tests, setTests] = useState([] as IToolsLevel[]);
+
+    
+    useEffect(() => {
+        console.log('test');
+        if(exam && tests.length === 0){
+            setTests([...exam.tests]);
+        }
+        // if(tests.length === 0 && exam && exam.tests && exam.tests.length){
+            
+        // }
+    },[exam, exams, tests]);
+
     return (
-        <Exam.Provider value={useExam(skills)}>
-            <Exam.Consumer>
-                {({addExam}) => (
-                    <Dialog fullScreen typeof="" aria-labelledby="form-dialog-title" open>
-                        <DialogTitle id="simple-dialog-title">Create a new exam</DialogTitle>
-                        <DialogContent>
-                            <form>
-                                <FormControl fullWidth>
-                                    <TextField type="date" value={dateFormated(date)} label="Date:" onChange={changeDate}/>
-                                </FormControl>
-                                {
-                                    tests.map((test, index) => (
-                                        <ExamForm.Test 
-                                            onChange={setTestItem} 
-                                            onDelete={delTestItem} 
-                                            index={index} 
-                                            idSkill={test.idSkill} 
-                                            idTool={test.idTool} 
-                                            level={test.level} 
-                                            key={`${index}_test`}
-                                        />
-                                    ))
-                                }
-                                <FormControl fullWidth style={{marginTop:10}}>
-                                    <Fab onClick={addTestItem} color="primary" aria-label="Add">
-                                        <Icon>add</Icon>
-                                    </Fab>
-                                </FormControl>
-                            </form>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button disabled={!tests.length} onClick={addExamWrapper(addExam)}>
-                                Add
-                            </Button>
-                            <Link className="MuiButtonBase-root MuiButton-root MuiButton-text" to="/">
-                                Cancel
-                            </Link>
-                        </DialogActions>
-                        {redirect && (<Redirect to="/"></Redirect>)}
-                    </Dialog>
-                )}
-            </Exam.Consumer>
-        </Exam.Provider>
+        <form>
+            {/* <FormControl fullWidth>
+                <TextField type="date" value={dateFormated(date)} label="Date:" onChange={changeDate}/>
+            </FormControl> */}
+            {
+                tests.map((test, index) => (
+                    <ExamForm.Test 
+                        onChange={setTestItem}
+                        onDelete={delTestItem}
+                        index={index}
+                        idSkill={test.idSkill}
+                        idTool={test.idTool}
+                        level={test.level}
+                        key={`${index}_test`}
+                    />
+                ))
+            }
+            <Box left="0" right="0" position="absolute" justifyContent="center" alignItems="center" display="flex" style={{bottom:16}}>
+                <Fab size="small" onClick={addTestItem} color="primary" aria-label="Add">
+                    <Icon>add</Icon>
+                </Fab>
+            </Box>
+        </form>
     );
 }
 
@@ -180,7 +254,7 @@ const Test:StateTestComponent = ({index,idSkill, level, idTool, onDelete, onChan
     },[index, state, onChange, idSkill, level, idTool]);
 
     return (
-        <Box style={{width:'100%', marginTop:10}} display="flex" flexGrow="initial">
+        <Box width="98%" style={{marginTop:10}} display="flex" flexGrow="initial">
             <FormControl style={{flex:.5}}>
                 <InputLabel htmlFor="skillid">Skill</InputLabel>
                 <Select
@@ -241,4 +315,19 @@ const Test:StateTestComponent = ({index,idSkill, level, idTool, onDelete, onChan
 
 ExamForm.Test = Test;
 
-export default ExamForm;
+const Body:FunctionComponent<{idExam:string}> = ({idExam}) => {
+    return(
+        <main>
+            <Container maxWidth="lg">
+                <section style={{marginTop:80}}>
+                    <ExamForm idExam={idExam}/>
+                </section>
+            </Container>
+        </main>
+    )
+}
+
+ExamAdd.Head = Head;
+ExamAdd.Body = Body;
+
+export default ExamAdd;

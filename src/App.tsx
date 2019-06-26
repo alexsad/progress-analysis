@@ -28,6 +28,7 @@ const App: React.FC = () => {
                         <Route path="/exam-analysis" exact render={() => <ExamAnalysis idUser={idUser} />} />
                         <Route path="/qr-code/url/:url" render={({match:{params}}) => <QRCode url={`${decodeURIComponent(params.url)}`} />} />
                         <Route path="/exam/add" component={ExamAdd} />
+                        <Route path="/exam/edit/:id" render={({match:{params}}) => <ExamAdd idExam={params.id} />} />
                       </Switch>
                     </Router>  
                 ) : (

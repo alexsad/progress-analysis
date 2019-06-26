@@ -9,7 +9,8 @@ interface ISummarize {
 interface IExamStore {
     exams: IExame[];
     summarize: (exams: IExame[]) => ISummarize[];
-    addExam: (exam: IExame) => Promise<IExame>;
+    save: (exam: IExame) => Promise<IExame>;
+    remove: (idExam: string) => Promise<boolean>;
 }
 
 const useExam = (skills: ISkill[]) => {
@@ -34,20 +35,35 @@ const useExam = (skills: ISkill[]) => {
         return data as ISummarize[];
     }
 
-    const addExam = (exam: IExame) => {
-        const nexams = [...exams,...[exam]];
+    const save = (exam: IExame) => {
+        let nexams = [];
+        if(exam.id){
+            const examIndex = exams.findIndex(({id}) => exam.id === id);
+            nexams[examIndex] = exam;
+        }else{
+            exam.id = `${new Date().getTime()}`;
+            nexams = [...exams,...[exam]];
+        }
+
         localStorage.setItem('exams', JSON.stringify(nexams));
         setExams(nexams);
         return Promise.resolve(exam);
     }
 
+    const remove = (idExam: string) => {
+        const examIndex = exams.findIndex(({id}) => idExam === id);
+        exams.splice(examIndex, 1);
+        localStorage.setItem('exams', JSON.stringify(exams));
+        setExams([...exams]);
+        return Promise.resolve(true);
+    }
+
+
     useEffect(() => {
         if (exams.length === 0) {
             setTimeout(() => {
-                
                 const data:IExame[] = JSON.parse(localStorage.getItem('exams') || '[]');
 
-                // data.sort((currExam, nextExam) => currExam.date - nextExam.date);
                 data.sort((currExam, nextExam) => nextExam.date - currExam.date);
                 
                 const getScoreByIdSkill = (countTools: number, snapshot:{[key:string]:number}) => {
@@ -89,41 +105,14 @@ const useExam = (skills: ISkill[]) => {
                         
                         (exam.scores as any)[id] = exams1Res;
                     });
-                }
-
-                /*
-                data.forEach((exam) => {
-                    skills.forEach(({id}) => {
-                        virtualTests[id] = virtualTests[id] || {};
-                        exam
-                            .tests
-                            .filter((test) => test.idSkill === id).forEach(test => {
-                                virtualTests[id][test.idTool] = test.level;
-                            });
-                    });
-
-                    skills.forEach(({id, tools}) => {
-                        const exams1Res = Math
-                                            .trunc(
-                                                getScoreByIdSkill(tools.length, virtualTests[id])
-                                            );
-                        
-                        (exam.scores as any)[id] = exams1Res;
-                    });
-                });
-                */
-
-                // data.reverse();
-                // data.sort((currExam, nextExam) => nextExam.date - currExam.date);
-
-                // console.log(data);
+                };
 
                 setExams([...data]);
             }, 400);
         }
     }, [exams, skills]);
 
-    return { exams, summarize, addExam };
+    return { exams, summarize, save, remove };
 }
 
 const Exam = createContext({} as IExamStore);
