@@ -115,7 +115,7 @@ interface StateExam{
     level:ELevel;
 }
 
-interface StateTestComponent extends FunctionComponent<IToolsLevel & {index:number, onDelete:(index:number) => void, onChange:(toolLevel: IToolsLevel, index: number) => void }>{
+interface StateTestComponent extends FunctionComponent<IToolsLevel & {index:number, onChange:(toolLevel: IToolsLevel, index: number) => void }>{
 
 }
 
@@ -155,14 +155,6 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
         }
     }
 
-    const delTestItem = (index:number) => {
-        console.log(index);
-        setTests(oldtests => {
-            oldtests.splice(index,1);
-            return [...oldtests];
-        });
-    }
-
     const addExamWrapper = () => {
         if(tests.length){
             save({
@@ -200,7 +192,6 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
                 tests.map((test, index) => (
                     <ExamForm.Test 
                         onChange={setTestItem}
-                        onDelete={delTestItem}
                         index={index}
                         idSkill={test.idSkill}
                         idTool={test.idTool}
@@ -218,7 +209,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
     );
 }
 
-const Test:StateTestComponent = ({index,idSkill, level, idTool, onDelete, onChange}) => {
+const Test:StateTestComponent = ({index,idSkill, level, idTool, onChange}) => {
     const classes = useStyles();
 
     const {skills} = useContext(Skill);
@@ -303,11 +294,6 @@ const Test:StateTestComponent = ({index,idSkill, level, idTool, onDelete, onChan
                         (level, index) => (<MenuItem key={`_${index}`} value={index}>{level}</MenuItem>)
                     )}
                 </Select>
-            </FormControl>
-            <FormControl style={{flex:.0, marginTop:10}}>
-                <Icon onClick={() => onDelete(index)}>
-                    delete_outline
-                </Icon>
             </FormControl>
         </Box>
     );
