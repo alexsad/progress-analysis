@@ -6,11 +6,18 @@ interface ISummarize {
     [key: string]: any;
 }
 
+interface IVirtualExam {
+    [idSkill:string]: {
+        [idTool:string] : ELevel
+    };
+}
+
 interface IExamStore {
     exams: IExame[];
     summarize: (exams: IExame[]) => ISummarize[];
     save: (exam: IExame) => Promise<IExame>;
     remove: (idExam: string) => Promise<boolean>;
+    getSnapshot: (idExam: string, exams: IExame[]) => IVirtualExam;
 }
 
 const useExam = (skills: ISkill[]) => {
@@ -58,6 +65,28 @@ const useExam = (skills: ISkill[]) => {
         return Promise.resolve(true);
     }
 
+    const getSnapshot = (idExam: string, pexams: IExame[]) => {
+        const virtualTests: IVirtualExam = {};
+
+        for(let x = pexams.length - 1; x > -1 ; x-- ){
+            const exam = pexams[x];
+
+            skills.forEach(({id}) => {
+                virtualTests[id] = virtualTests[id] || {};
+                exam
+                    .tests
+                    .filter((test) => test.idSkill === id).forEach(test => {
+                        virtualTests[id][test.idTool] = test.level;
+                    });
+            });
+
+            if(idExam === exam.id){
+                break;
+            }
+        }
+
+        return virtualTests;
+    }
 
     useEffect(() => {
         if (exams.length === 0) {
@@ -71,19 +100,15 @@ const useExam = (skills: ISkill[]) => {
                     const levelLength = Object.keys(ELevel).length / 2;
                     const score = 
                         Object
-                        .keys(snapshot)
-                        .reduce((prev, key) => {
-                            const levelWeight = snapshot[key] + 1;
-                            return ((baseCalc / levelLength) * levelWeight) + prev;
-                        }, 0);
+                            .keys(snapshot)
+                            .reduce((prev, key) => {
+                                const levelWeight = snapshot[key] + 1;
+                                return ((baseCalc / levelLength) * levelWeight) + prev;
+                            }, 0);
                     return score;
                 };
 
-                const virtualTests: {
-                    [idSkill:string]: {
-                        [idTest:string] : ELevel
-                    };
-                } = {};
+                const virtualTests: IVirtualExam = {};
 
                 for(let x = data.length - 1; x > -1 ; x-- ){
                     const exam = data[x];
@@ -112,7 +137,7 @@ const useExam = (skills: ISkill[]) => {
         }
     }, [exams, skills]);
 
-    return { exams, summarize, save, remove };
+    return {exams, summarize, save, remove, getSnapshot};
 }
 
 const Exam = createContext({} as IExamStore);

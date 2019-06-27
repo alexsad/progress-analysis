@@ -115,12 +115,12 @@ interface StateExam{
     level:ELevel;
 }
 
-interface StateTestComponent extends FunctionComponent<IToolsLevel & {index:number, levels:string[], onChange:(toolLevel: IToolsLevel, index: number) => void }>{
+interface StateTestComponent extends FunctionComponent<IToolsLevel & {toolName:string, index:number, levels:string[], onChange:(level: ELevel, index: number) => void }>{
 
 }
 
 const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam}) => {
-    const {exams, save} = useContext(Exam);
+    const {exams, save, getSnapshot} = useContext(Exam);
     const [date, setDate] = useState(new Date().getTime());
     const [redirect, setRedirect] = useState(false);
     const {skills} = useContext(Skill);
@@ -147,11 +147,15 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
         });
     }
     
-    const setTestItem = (toolLevel:IToolsLevel, index: number) => {
-        if(toolLevel.idSkill && toolLevel.idTool){
+    const setTestItem = (toolLevel:ELevel, index: number) => {
+        if(toolLevel){
+            // #tofix
             setTests(oldtests => {
-                oldtests[index] = {...toolLevel};
-                return [...oldtests];
+                if(oldtests[index].level !== toolLevel){
+                    oldtests[index].level = toolLevel;
+                    return [...oldtests];
+                }
+                return oldtests;
             });
         }
     }
@@ -173,21 +177,50 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
     
     const [tests, setTests] = useState([] as IToolsLevel[]);
 
-    const levels = (Object.keys(ELevel)).filter((key:any) => typeof ELevel[key] === 'number')
+    const levels = (Object.keys(ELevel)).filter((key:any) => typeof ELevel[key] === 'number');
 
     
-    useEffect(() => {
-        console.log('test');
-        if(exam && tests.length === 0){
-            setTests([...exam.tests]);
-        }
-        // if(tests.length === 0 && exam && exam.tests && exam.tests.length){
+    // useEffect(() => {
+    //     console.log('test');
+    //     if(exam && exam.tests && tests.length === 0 ){
+    //         setTests([...exam.tests]);
+    //     }
+    //     // if(tests.length === 0 && exam && exam.tests && exam.tests.length){
             
-        // }
-    },[exam, exams, tests]);
+    //     // }
+    // },[exam, exams, tests]);
 
     const [selectedSkill, setSelectedSkill] = React.useState(0);
     const icons = ['hearing','chrome_reader_mode','sms','create','book'];
+
+    const skillById = (idSkill:string) => {
+        const skill = skills.find((skill) => skill.id === idSkill);
+        
+        if(typeof skill === 'undefined' || !exam){
+            return {
+                tools:[],
+                id:'',
+                name:'',
+                description:''
+            } as ISkill;
+        }
+
+        const snapshot = getSnapshot(exam.id, exams);
+
+        skill.tools.forEach(tool => {
+            const level = snapshot[idSkill][tool.id] || ELevel.BREAKTHROUGH; 
+            tool.level = level;
+        });
+
+        console.log({idSkill, idExam: exam.id, snapshot, skill});
+
+        return skill as unknown as ISkill;
+    }
+
+    const toolById = (idSkill:string, idTool:string) => {
+        const skill = skills.find((skill) => skill.id === idSkill) || { tools:[] };
+        return skill.tools.find(tool => tool.id === idTool) || {} as ITool;
+    };
 
     return (
         <>
@@ -195,7 +228,9 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
                 <Tabs
                     value={selectedSkill}
                     onChange={(event, newValue) => {
-                        setSelectedSkill(newValue);
+                        if(newValue !== selectedSkill){
+                            setSelectedSkill(newValue);
+                        }
                     }}
                     color="inherit"
                     variant="fullWidth"
@@ -217,7 +252,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
                 {/* <FormControl fullWidth>
                     <TextField type="date" value={dateFormated(date)} label="Date:" onChange={changeDate}/>
                 </FormControl> */}
-                {
+                {/* {
                     tests.map((test, index) => (
                         <ExamForm.Test 
                             onChange={setTestItem}
@@ -229,7 +264,23 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
                             levels={levels}
                         />
                     ))
+                } */}
+
+                {
+                    skillById(`${selectedSkill+1}`).tools.map((tool, index) => (
+                        <ExamForm.Test 
+                            onChange={setTestItem}
+                            index={index}
+                            idSkill={`${selectedSkill+1}`}
+                            idTool={tool.id}
+                            toolName={toolById(`${selectedSkill+1}`, tool.id).description}
+                            level={tool.level || ELevel.BREAKTHROUGH}
+                            key={`${index}_test`}
+                            levels={levels}
+                        />
+                    ))
                 }
+
                 {/* <Box left="0" right="0" position="absolute" justifyContent="center" alignItems="center" display="flex" style={{bottom:16}}>
                     <Fab size="small" onClick={addTestItem} color="primary" aria-label="Add">
                         <Icon>add</Icon>
@@ -240,48 +291,23 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
     );
 }
 
-const Test:StateTestComponent = ({levels,index,idSkill, level, idTool, onChange}) => {
-    
-    const {skills} = useContext(Skill);
+const Test:StateTestComponent = ({toolName, levels, index, level, onChange}) => {
+    const [selectedLevel, setLevel] = useState(level);
 
-    const [state, setState] = useState({idSkill, idTool, level} as StateExam);
-
-    const handleChange = (name: keyof StateExam) => (event: any) => {
-        if(event.target && event.target.value){
-            const props = {[name]: event.target.value} as any;
-            setState(oldprops => ({...oldprops, ...props}));
+    const handleChangeLevel = ({target}: any) => {
+        const value = Number(target.value || selectedLevel);
+        if( value && value !== selectedLevel ){
+            setLevel(value);
+            onChange(value, index);
         }
     };
-
-    const skillById = (idSkill:string) => {
-        const skill = skills.find((skill) => skill.id === idSkill);
-        
-        if(typeof skill === 'undefined'){
-            return {
-                tools:[],
-                id:'',
-                name:'',
-                description:''
-            } as ISkill;
-        }
-        return skill as unknown as ISkill;
-    }
-
-    useEffect(() => {
-        if(state.idSkill !== idSkill || state.idTool !== idTool || state.level !== level){
-            onChange(state, index);
-        }
-    },[index, state, onChange, idSkill, level, idTool]);
-
-    const tool = skillById(state.idSkill).tools.find(tool => tool.id === idTool) || {} as ITool;
-
 
     return (
         <>
             <ListItem alignItems="flex-start">
                 <Box display="flex" flexDirection="row" flexGrow={1} flexWrap="wrap">
                     <Typography style={{ width: '100%' }}>
-                        {tool.description}
+                        {toolName}
                     </Typography>                        
                     {levels.map(
                         (level, index) => (
@@ -294,83 +320,19 @@ const Test:StateTestComponent = ({levels,index,idSkill, level, idTool, onChange}
                                 checkedIcon={
                                     <Icon style={{color:'#ea9f1d'}} fontSize="small">star</Icon>
                                 }
-                                checked={index <= state.level}
+                                checked={index <= selectedLevel}
                                 value={index}
-                                onChange={handleChange('level')}
+                                onChange={handleChangeLevel}
                             />
                         )
                     )}
                     <Typography variant="overline" color="textSecondary" style={{ width: '100%' }}>
-                        {ELevel[state.level]}
+                        {ELevel[selectedLevel]}
                     </Typography>
                 </Box>
             </ListItem>
             <Divider variant="fullWidth" component="li" />
         </>
-        // <Box width="98%" style={{marginTop:10}} display="flex" flexGrow="initial">
-        //     <FormControl style={{flex:.5}}>
-        //         <InputLabel htmlFor="skillid">Skill</InputLabel>
-        //         <Select
-        //             inputProps={{
-        //                 name: 'skill',
-        //                 id: 'skillid',
-        //             }}
-        //             value={state.idSkill}
-        //             onChange={handleChange('idSkill')}
-        //             className={classes.selectEmpty}
-        //         >
-        //             {skills.map(
-        //                 (skill, index) => (<MenuItem key={`${skill.id}_${index}`} value={skill.id}>{skill.name}</MenuItem>)
-        //             )}
-        //         </Select>
-        //     </FormControl>
-        //     <FormControl style={{flex:1}}>
-        //         <InputLabel htmlFor="toolid">Tool</InputLabel>
-        //         <Select
-        //             inputProps={{
-        //                 name: 'tool',
-        //                 id: 'toolid',
-        //             }}
-        //             value={state.idTool || ' '}
-        //             onChange={handleChange('idTool')}
-        //             disabled={!state.idSkill}
-        //             className={classes.selectEmpty}
-        //         >
-        //             {skillById(state.idSkill).tools.map(
-        //                 (tool, index) => (<MenuItem key={`${tool.id}_${index}`} value={tool.id}>{tool.description}</MenuItem>)
-        //             )}
-        //         </Select>
-        //     </FormControl>
-        //     <FormControl style={{flex:.5}}>
-        //         <InputLabel htmlFor="levelid">Level</InputLabel>
-        //         <Select
-        //             inputProps={{
-        //                 name: 'level',
-        //                 id: 'levelid',
-        //             }}
-        //             value={state.level}
-        //             onChange={handleChange('level')}
-        //             className={classes.selectEmpty}
-        //         >
-                    // {levels.map(
-                    //     (level, index) => (<MenuItem key={`_${index}`} value={index}>{level}</MenuItem>)
-                    // )}
-        //         </Select>
-        //     </FormControl>
-        //     <FormControl>
-        //         <Box>
-                    // <Checkbox 
-                    //     icon={
-                    //         <Icon color="action" fontSize="small">star_border</Icon>
-                    //     } 
-                    //     checkedIcon={
-                    //         <Icon color="default" fontSize="small">star</Icon>
-                    //     } 
-                    //     value="checkedH" 
-                    // />
-        //         </Box>
-        //     </FormControl>
-        // </Box>
     );
 }
 
