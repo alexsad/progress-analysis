@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.scss';
-import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom";
+import { HashRouter as Router, Route, Switch, Redirect } from "react-router-dom";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {Sign, useSign} from './stores/SignStore';
 import LinearProgress from '@material-ui/core/LinearProgress';

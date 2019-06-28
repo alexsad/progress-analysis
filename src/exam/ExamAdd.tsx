@@ -44,8 +44,6 @@ const useStyles = makeStyles((theme: Theme) =>
 const ExamAdd: FunctionComponent<{idExam:string}> & { Head: FunctionComponent<{idExam:string}>} = ({idExam}) => {
     const {skills} = useContext(Skill);
 
-    console.log('mount');
-
     return (
        <Exam.Provider value={useExam(skills)}>
             <ExamAdd.Head idExam={idExam}/>
@@ -62,26 +60,47 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
     const classes = useStyles();
     const {exams, remove, commit, reset, push, stage} = useContext(Exam);
 
-    // useEffect(() => {
-    //     console.log('head:mount',idExam,stage.id,stage);
-
-
-
-    //     return () => {
-    //         reset();
-    //     };
-    // }, [exams,commit,idExam,stage,reset]);
-
-    if(typeof idExam === 'undefined' && !!stage.id){
-        console.log('head:mount2',idExam,stage.id);
-        commit({
-            id:`${new Date().getTime()}`
-        } as IExame);
-    }else if(!!idExam && stage.id !== idExam){
-        const exam = exams.find(({id}) => idExam === id) || {} as IExame;
-        commit(exam);
-    }
-    
+    useEffect(() => {
+/*
+        console.log('head:mount2',{
+            stage,
+            idExam,
+            stageId:stage.id,
+            typeIdEXAM:typeof idExam,
+            verificationA:typeof idExam === 'undefined',
+            verificationB:!!stage.id,
+            verificationC:stage.id !== idExam,
+            typeSTAGEID:typeof stage.id,
+        });
+*/
+        if(typeof idExam === 'undefined' && !!stage.id){
+            //console.log('a');
+            
+            commit({
+                id:`${new Date().getTime()}`,
+                tests: [] as IToolsLevel[],
+            } as IExame);
+            
+        }else if(!!idExam && stage.id !== idExam){
+            //console.log('b');
+            const exam = exams.find(({id}) => idExam === id) || {} as IExame;
+            //console.log('c', {exams,exam});
+            commit(exam);
+        }
+        return () => {
+            reset();
+        };
+    }, []);
+/*
+    console.log('head:render',{
+        idExam,
+        stage,
+        typeIdEXAM:typeof idExam,
+        verificationA:typeof idExam === 'undefined',
+        verificationC:stage.id !== idExam,
+        typeSTAGEID:typeof stage.id,
+     });
+*/   
     const dateFormated = (pdate:number) => {
         const [year, month, day] = new Date(pdate).toISOString().substring(0,10).split('-');
         return `${year}-${month}-${day}`;
@@ -115,10 +134,10 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
                     <Icon>insert_chart</Icon>
                 </Avatar>
 
-                {!!stage && !!stage.date && (
+                {!!stage && (
                     <Typography style={{ flexGrow: 1, color:"#efefef", paddingLeft:"4px"}} variant="subtitle2">
                         Exam of
-                        <input className={classes.headInput} type="date" value={dateFormated(stage.date)} onChange={changeDate}/>
+                        <input className={classes.headInput} type="date" value={dateFormated(stage.date || new Date().getTime())} onChange={changeDate}/>
                     </Typography>
                 )}
 
@@ -156,14 +175,16 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
     const icons = ['hearing','chrome_reader_mode','sms','create','book'];
     
     const setTestItem = (toolLevel:ELevel, idSkill:string, idTool:string) => {
+        //console.log({toolLevel, stage});
+        const {tests = []} = stage;
         if(toolLevel){
-            const testIndex = stage.tests.findIndex(test => test.idTool === idTool);
-            console.log(testIndex);
-            if(testIndex > -1 && stage.tests[testIndex].level !== toolLevel){
-                stage.tests[testIndex].level = toolLevel;
-                commit({tests: [...stage.tests]} as IExame);
+            const testIndex = tests.findIndex(test => test.idTool === idTool);
+            //console.log(testIndex);
+            if(testIndex > -1 && tests[testIndex].level !== toolLevel){
+                tests[testIndex].level = toolLevel;
+                commit({tests: [...tests]} as IExame);
             }else{
-                commit({tests: [...stage.tests,...[{
+                commit({tests: [...tests,...[{
                     idTool,
                     idSkill,
                     level:toolLevel,
@@ -187,7 +208,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
         }
 
         const snapshot = getSnapshot(stage.id, exams);
-        console.log({idSkill,skill,snapshot});
+        //console.log({idSkill,skill,snapshot});
 
         skill.tools.forEach(tool => {
             const test = stage.tests ? stage.tests.find(exam => exam.idSkill === idSkill && exam.idTool === tool.id) : null;

@@ -8,12 +8,10 @@ interface ISkillStore {
 const useSkill = () => {
     const [skills, setSkills] = useState([] as ISkill[]);
     useEffect(() => {
-        if (skills.length === 0) {
-            fetch('/data/skills.json')
-                .then(rs => rs.json())
-                .then(data => setSkills([...data]));
-        }
-    }, [skills]);
+       fetch('/data/skills.json')
+          .then(rs => rs.json())
+          .then(data => setSkills([...data]));
+    }, []);
 
     return { skills };
 }

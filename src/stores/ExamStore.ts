@@ -38,7 +38,10 @@ const useExam = (skills: ISkill[]) => {
                 .map((skill) => {
                     const examsBySkill = pexams
                         .reduce((prev, { id, scores }) => {
-                            prev[id] = scores[skill.id] || 0;
+                            prev[id] = 0;
+                            if(scores && scores[skill.id]){
+                                prev[id] = scores[skill.id];
+                            }
                             return prev;
                         }, {} as { [key: string]: number });
                     return { ...examsBySkill, ...skill };
@@ -60,9 +63,11 @@ const useExam = (skills: ISkill[]) => {
         const nexamStr = JSON.stringify(nexams);
 
         localStorage.setItem('exams', nexamStr);
-        setExams(JSON.parse(nexamStr));
-        reset();
-        return Promise.resolve(true);
+
+        return readData().then(() => {
+            reset();
+            return Promise.resolve(true);
+        });       
     }
 
     const reset = () => {
@@ -71,13 +76,13 @@ const useExam = (skills: ISkill[]) => {
     }
 
     const commit = (exam: IExame) => {
-        console.log('commit',exam);
+        //console.log('commit:', exam);
         setStage(oldStage => {
             const dateTime = new Date().getTime();
             oldStage.date = oldStage.date  || dateTime;
-            oldStage.tests = oldStage.tests || [];
+            //oldStage.tests = oldStage.tests || [];
             oldStage.scores = oldStage.scores || {};
-            return Object.assign({},oldStage,exam);// {...oldStage, ...exam};
+            return {...oldStage, ...exam};
         });
         return Promise.resolve(true);
     }
@@ -98,11 +103,13 @@ const useExam = (skills: ISkill[]) => {
 
             skills.forEach(({id}) => {
                 virtualTests[id] = virtualTests[id] || {};
-                exam
-                    .tests
-                    .filter((test) => test.idSkill === id).forEach(test => {
-                        virtualTests[id][test.idTool] = test.level;
-                    });
+                if(exam.tests){
+                     exam
+                        .tests
+                        .filter((test) => test.idSkill === id).forEach(test => {
+                            virtualTests[id][test.idTool] = test.level;
+                        });               
+                }
             });
 
             if(idExam === exam.id){
@@ -113,54 +120,60 @@ const useExam = (skills: ISkill[]) => {
         return virtualTests;
     }
 
+    const readData = () => {
+        const data:IExame[] = JSON.parse(localStorage.getItem('exams') || '[]');
+        data.sort((currExam, nextExam) => nextExam.date - currExam.date);
+        
+        const getScoreByIdSkill = (countTools: number, snapshot:{[key:string]:number}) => {
+            const baseCalc = 100 / countTools;
+            const levelLength = Object.keys(ELevel).length / 2;
+            const score = 
+                Object
+                    .keys(snapshot)
+                    .reduce((prev, key) => {
+                        const levelWeight = snapshot[key] + 1;
+                        return ((baseCalc / levelLength) * levelWeight) + prev;
+                    }, 0);
+            return score;
+        };
+
+        const virtualTests: IVirtualExam = {};
+
+        for(let x = data.length - 1; x > -1 ; x-- ){
+            const exam = data[x];
+
+            skills.forEach(({id}) => {
+                virtualTests[id] = virtualTests[id] || {};
+                if(exam.tests){
+                    exam
+                        .tests
+                        .filter((test) => test.idSkill === id).forEach(test => {
+                            virtualTests[id][test.idTool] = test.level;
+                        });
+                }
+
+            });
+
+            skills.forEach(({id, tools}) => {
+                const exams1Res = Math
+                                    .trunc(
+                                        getScoreByIdSkill(tools.length, virtualTests[id])
+                                    );
+                if(exam.scores){
+                    (exam.scores as any)[id] = exams1Res;
+                }
+            });
+        };
+
+       setExams([...data]);
+       return Promise.resolve(true);
+    }
+
     useEffect(() => {
-        if (exams.length === 0) {
-            setTimeout(() => {
-                const data:IExame[] = JSON.parse(localStorage.getItem('exams') || '[]');
-
-                data.sort((currExam, nextExam) => nextExam.date - currExam.date);
-                
-                const getScoreByIdSkill = (countTools: number, snapshot:{[key:string]:number}) => {
-                    const baseCalc = 100 / countTools;
-                    const levelLength = Object.keys(ELevel).length / 2;
-                    const score = 
-                        Object
-                            .keys(snapshot)
-                            .reduce((prev, key) => {
-                                const levelWeight = snapshot[key] + 1;
-                                return ((baseCalc / levelLength) * levelWeight) + prev;
-                            }, 0);
-                    return score;
-                };
-
-                const virtualTests: IVirtualExam = {};
-
-                for(let x = data.length - 1; x > -1 ; x-- ){
-                    const exam = data[x];
-
-                    skills.forEach(({id}) => {
-                        virtualTests[id] = virtualTests[id] || {};
-                        exam
-                            .tests
-                            .filter((test) => test.idSkill === id).forEach(test => {
-                                virtualTests[id][test.idTool] = test.level;
-                            });
-                    });
-
-                    skills.forEach(({id, tools}) => {
-                        const exams1Res = Math
-                                            .trunc(
-                                                getScoreByIdSkill(tools.length, virtualTests[id])
-                                            );
-                        
-                        (exam.scores as any)[id] = exams1Res;
-                    });
-                };
-
-                setExams([...data]);
-            }, 400);
-        }
-    }, [exams, skills]);
+        setTimeout(() => {
+            readData();
+        }, 400);
+    }, []);
 
     return {exams, summarize, push, reset, remove, getSnapshot, stage, commit};
 }
