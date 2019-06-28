@@ -14,14 +14,18 @@ interface IVirtualExam {
 
 interface IExamStore {
     exams: IExame[];
+    stage: IExame;
+    commit: (exam: IExame) => Promise<boolean>;
+    reset: () => Promise<boolean>;
     summarize: (exams: IExame[]) => ISummarize[];
-    save: (exam: IExame) => Promise<IExame>;
+    push: () => Promise<boolean>;
     remove: (idExam: string) => Promise<boolean>;
     getSnapshot: (idExam: string, exams: IExame[]) => IVirtualExam;
 }
 
 const useExam = (skills: ISkill[]) => {
     const [exams, setExams] = useState([] as IExame[]);
+    const [stage, setStage] = useState({} as IExame);
 
     const summarize = (pexams: IExame[]) => {
         const data =
@@ -34,7 +38,7 @@ const useExam = (skills: ISkill[]) => {
                 .map((skill) => {
                     const examsBySkill = pexams
                         .reduce((prev, { id, scores }) => {
-                            prev[id] = scores[skill.id] | 0;
+                            prev[id] = scores[skill.id] || 0;
                             return prev;
                         }, {} as { [key: string]: number });
                     return { ...examsBySkill, ...skill };
@@ -42,19 +46,40 @@ const useExam = (skills: ISkill[]) => {
         return data as ISummarize[];
     }
 
-    const save = (exam: IExame) => {
+    const push = () => {
         let nexams = [];
-        if(exam.id){
-            const examIndex = exams.findIndex(({id}) => exam.id === id);
-            nexams[examIndex] = exam;
+        const examIndex = exams.findIndex(({id}) => stage.id === id);
+
+        if(stage.id && examIndex > -1){
+            nexams[examIndex] = stage;
         }else{
-            exam.id = `${new Date().getTime()}`;
-            nexams = [...exams,...[exam]];
+            stage.id = `${new Date().getTime()}`;
+            nexams = [...exams,...[stage]];
         }
 
-        localStorage.setItem('exams', JSON.stringify(nexams));
-        setExams(nexams);
-        return Promise.resolve(exam);
+        const nexamStr = JSON.stringify(nexams);
+
+        localStorage.setItem('exams', nexamStr);
+        setExams(JSON.parse(nexamStr));
+        reset();
+        return Promise.resolve(true);
+    }
+
+    const reset = () => {
+        setStage(Object.create({}));
+        return Promise.resolve(true);
+    }
+
+    const commit = (exam: IExame) => {
+        console.log('commit',exam);
+        setStage(oldStage => {
+            const dateTime = new Date().getTime();
+            oldStage.date = oldStage.date  || dateTime;
+            oldStage.tests = oldStage.tests || [];
+            oldStage.scores = oldStage.scores || {};
+            return Object.assign({},oldStage,exam);// {...oldStage, ...exam};
+        });
+        return Promise.resolve(true);
     }
 
     const remove = (idExam: string) => {
@@ -137,7 +162,7 @@ const useExam = (skills: ISkill[]) => {
         }
     }, [exams, skills]);
 
-    return {exams, summarize, save, remove, getSnapshot};
+    return {exams, summarize, push, reset, remove, getSnapshot, stage, commit};
 }
 
 const Exam = createContext({} as IExamStore);
