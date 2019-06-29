@@ -16,6 +16,7 @@ interface IExamStore {
     exams: IExame[];
     stage: IExame;
     commit: (exam: IExame) => Promise<boolean>;
+    includeExams: (exams: IExame[]) => Promise<boolean>;
     reset: () => Promise<boolean>;
     summarize: (exams: IExame[]) => ISummarize[];
     push: () => Promise<boolean>;
@@ -48,6 +49,18 @@ const useExam = (skills: ISkill[]) => {
                 });
         return data as ISummarize[];
     }
+
+    const includeExams = (pexams: IExame[]) => {
+        
+        const nexamStr = JSON.stringify([...exams, ...pexams]);
+
+        localStorage.setItem('exams', nexamStr);
+
+        return readData().then(() => {
+            reset();
+            return Promise.resolve(true);
+        });
+    };
 
     const push = () => {
         let nexams = [];
@@ -173,7 +186,7 @@ const useExam = (skills: ISkill[]) => {
         readData();
     }, []);
 
-    return {exams, summarize, push, reset, remove, getSnapshot, stage, commit};
+    return {includeExams, exams, summarize, push, reset, remove, getSnapshot, stage, commit};
 }
 
 const Exam = createContext({} as IExamStore);

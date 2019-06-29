@@ -177,8 +177,8 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
 const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam}) => {
     const {exams, exams:{length:examCount}, commit, getSnapshot, stage} = useContext(Exam);
     const {skills} = useContext(Skill);
-    const [selectedSkill, setSelectedSkill] = React.useState(0);
-    const icons = ['hearing','chrome_reader_mode','sms','create','book'];
+    const [selectedSkill, setSelectedSkill] = React.useState(`5`);
+    const icons = ['book','chrome_reader_mode','hearing','sms','create'];
     
     const setTestItem = (toolLevel:ELevel, idSkill:string, idTool:string) => {
         //console.log({toolLevel, stage});
@@ -253,6 +253,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
                             <Tab 
                                 key={skill.id} 
                                 label={skill.name}
+                                value={skill.id}
                                 icon={
                                     <Icon color="action" fontSize="small">{icons[index]}</Icon>
                                 } 
@@ -262,12 +263,12 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
             </Paper>
             <List>
                 {
-                    skillById(`${selectedSkill+1}`).tools.map((tool, index) => (
-                        <ExamForm.Test 
+                    skillById(selectedSkill).tools.map((tool, index) => (
+                        <ExamForm.Test
                             onChange={setTestItem}
-                            idSkill={`${selectedSkill+1}`}
+                            idSkill={selectedSkill}
                             idTool={tool.id}
-                            toolName={toolById(`${selectedSkill+1}`, tool.id).description}
+                            toolName={toolById(selectedSkill, tool.id).description}
                             level={tool.level as ELevel}
                             key={`${tool.id}_${examCount}_test`}
                             levels={levels}
@@ -284,10 +285,10 @@ const Test:StateTestComponent = ({toolName, levels, level, onChange, idSkill, id
 
     const handleChangeLevel = ({target}: any) => {
         const value = Number(target.value || selectedLevel);
-        if( value && value !== selectedLevel ){
+        // if( value && value !== selectedLevel ){
             setLevel(value);
             onChange(value, idSkill, idTool);
-        }
+        // }
     };
 
     return (
@@ -308,7 +309,7 @@ const Test:StateTestComponent = ({toolName, levels, level, onChange, idSkill, id
                                 checkedIcon={
                                     <Icon style={{color:'#ea9f1d'}} fontSize="small">star</Icon>
                                 }
-                                checked={index <= selectedLevel}
+                                checked={selectedLevel >= index}
                                 value={index}
                                 onChange={handleChangeLevel}
                             />

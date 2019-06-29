@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext, useState } from 'react';
+import React, { FunctionComponent, useContext, useState, ChangeEvent } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import { Link, Redirect } from 'react-router-dom';
 import Container from '@material-ui/core/Container';
@@ -30,6 +30,26 @@ const ExamAnalysis: FunctionComponent<{idUser:string}> & { Head: FunctionCompone
 
 const Head = () => {
     const classes = useStyles();
+    const {includeExams, exams} = useContext(Exam);
+
+    const inportFile = ({target}:ChangeEvent<HTMLInputElement>) => {
+        const reader = new FileReader();
+        reader.onload = function ({target}:any) {
+			if(target.readyState !== 2){
+				return;	
+			}
+			if(target.error) {
+				alert("Error while reading file");
+				return;
+			}
+            // JSON.parse(target.result);
+            includeExams(JSON.parse(target.result))
+                .then(res => console.log('imported with success!'));
+            // console.log(target.result);
+        };
+        reader.readAsText((target as any).files[0]);
+    }
+
     return(
         <AppBar position="fixed" color="inherit">
             <Toolbar>
@@ -41,14 +61,35 @@ const Head = () => {
                     My Exam Analysis
                 </Typography>
 
+                <input
+                    accept="json/*"
+                    style={{ display: 'none' }}
+                    id="raised-button-file"
+                    multiple
+                    type="file"
+                    onChange={inportFile}
+                />
+
+                <label htmlFor="raised-button-file">
+                    <IconButton
+                        color="default"
+                        aria-label="Open drawer"
+                        edge="end"
+                        component="span"
+                    >
+                        <Icon className={classes.iconStyle}>cloud_upload</Icon>
+                    </IconButton>
+                </label>
+
                 <IconButton
-                    color="default"
-                    aria-label="Open drawer"
-                    edge="end"
-                    to="/exam/add"
-                    component={Link}
-                >
-                    <Icon className={classes.iconStyle}>cloud_download</Icon>
+                        color="default"
+                        aria-label="Open drawer"
+                        edge="end"
+                        download={`${new Date().getTime()}-eng-ana.json`}
+                        href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(exams))}`}
+                        component="a"
+                    >
+                        <Icon className={classes.iconStyle}>save</Icon>
                 </IconButton>
 
                 <IconButton
@@ -94,12 +135,12 @@ const Body = () => {
                                         left: 0,
                                         bottom: -50,
                                     }} 
-                                    outerRadius={120} 
+                                    outerRadius={100} 
                                     data={summarize(exams)}
                                 >
                                     <PolarGrid />
                                     <PolarAngleAxis dataKey="subject" />
-                                    <PolarRadiusAxis angle={30} domain={[0, 100]}/>
+                                    <PolarRadiusAxis angle={55} domain={[0, 100]}/>
                                     
                                     {exams
                                         .map(({date, id}) => {
