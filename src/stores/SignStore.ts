@@ -7,7 +7,7 @@ interface ISignStore {
 const useSign = () => {
     const [idUser, setIdUser] = useState('');
     useEffect(() => {
-       setTimeout(() => setIdUser('uid'),2000);
+       setTimeout(() => setIdUser('uid'), 800);
     },[]);
 
     return { idUser };

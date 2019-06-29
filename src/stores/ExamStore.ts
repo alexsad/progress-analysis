@@ -170,9 +170,7 @@ const useExam = (skills: ISkill[]) => {
     }
 
     useEffect(() => {
-        setTimeout(() => {
-            readData();
-        }, 400);
+        readData();
     }, []);
 
     return {exams, summarize, push, reset, remove, getSnapshot, stage, commit};

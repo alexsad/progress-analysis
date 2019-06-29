@@ -60,6 +60,8 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
     const classes = useStyles();
     const {exams, remove, commit, reset, push, stage} = useContext(Exam);
 
+    // console.log('size:',exams.length);
+
     useEffect(() => {
 /*
         console.log('head:mount2',{
@@ -82,15 +84,15 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
             } as IExame);
             
         }else if(!!idExam && stage.id !== idExam){
-            //console.log('b');
+            // console.log('b');
             const exam = exams.find(({id}) => idExam === id) || {} as IExame;
-            //console.log('c', {exams,exam});
+            // console.log('c', {exams,exam});
             commit(exam);
         }
         return () => {
             reset();
         };
-    }, []);
+    }, [exams]);
 /*
     console.log('head:render',{
         idExam,
@@ -113,6 +115,7 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
     };
 
     const wrapperSave = () => {
+        // console.log(idExam,JSON.stringify(stage));
         push()
             .then(() => setRedirect(true));
     }
@@ -141,14 +144,17 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
                     </Typography>
                 )}
 
-                <IconButton
-                    color="default"
-                    aria-label="Open drawer"
-                    edge="end"
-                    onClick={wrapperRemove}
-                >
-                    <Icon className={classes.iconStyle}>delete_forever</Icon>
-                </IconButton>
+                {!!idExam && (
+                    <IconButton
+                        color="default"
+                        aria-label="Open drawer"
+                        edge="end"
+                        onClick={wrapperRemove}
+                    >
+                        <Icon className={classes.iconStyle}>delete_forever</Icon>
+                    </IconButton>
+                )}
+
 
                 <IconButton
                     color="default"
@@ -168,8 +174,8 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
     )
 }
 
-const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
-    const {exams, commit, getSnapshot, stage} = useContext(Exam);
+const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam}) => {
+    const {exams, exams:{length:examCount}, commit, getSnapshot, stage} = useContext(Exam);
     const {skills} = useContext(Skill);
     const [selectedSkill, setSelectedSkill] = React.useState(0);
     const icons = ['hearing','chrome_reader_mode','sms','create','book'];
@@ -197,7 +203,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
 
     const skillById = (idSkill:string) => {
         const skill = skills.find((skill) => skill.id === idSkill);
-        
+        // console.log(JSON.stringify(stage));
         if(typeof skill === 'undefined' || !stage){
             return {
                 tools:[],
@@ -208,8 +214,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
         }
 
         const snapshot = getSnapshot(stage.id, exams);
-        //console.log({idSkill,skill,snapshot});
-
+        
         skill.tools.forEach(tool => {
             const test = stage.tests ? stage.tests.find(exam => exam.idSkill === idSkill && exam.idTool === tool.id) : null;
             let level = ELevel.BREAKTHROUGH;
@@ -220,8 +225,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
             }
             tool.level = level;
         });
-        
-
+        // console.log({idSkill,skill:JSON.stringify(skill),snapshot:JSON.stringify(snapshot)});
         return skill as unknown as ISkill;
     }
 
@@ -245,14 +249,18 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
                     centered
                 >
                     {
-                        skills.map((skill, index) => (<Tab key={skill.id} label={skill.name} icon={
-                            <Icon color="action" fontSize="small">{icons[index]}</Icon>
-                        } />))
+                        skills.map((skill, index) => (
+                            <Tab 
+                                key={skill.id} 
+                                label={skill.name}
+                                icon={
+                                    <Icon color="action" fontSize="small">{icons[index]}</Icon>
+                                } 
+                            />))
                     }
                 </Tabs>
             </Paper>
             <List>
-
                 {
                     skillById(`${selectedSkill+1}`).tools.map((tool, index) => (
                         <ExamForm.Test 
@@ -261,7 +269,7 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = () => {
                             idTool={tool.id}
                             toolName={toolById(`${selectedSkill+1}`, tool.id).description}
                             level={tool.level as ELevel}
-                            key={`${tool.id}_test`}
+                            key={`${tool.id}_${examCount}_test`}
                             levels={levels}
                         />
                     ))
