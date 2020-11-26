@@ -2,7 +2,7 @@
   "name": "english-progress",
   "version": "0.1.0",
   "private": false,
-  "homepage": "http://alexsad.github.io/progress-analysis",
+  "homepage": "./",
   "dependencies": {
     "@material-ui/core": "4.0.1",
     "@types/recharts": "1.1.17",
