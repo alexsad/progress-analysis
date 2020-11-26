@@ -1,8 +1,8 @@
 {
   "name": "english-progress",
   "version": "0.1.0",
-  "private": true,
-  "homepage": "https://morning-cove-80203.herokuapp.com",
+  "private": false,
+  "homepage": "http://alexsad.github.io/progress-analysis",
   "dependencies": {
     "@material-ui/core": "4.0.1",
     "@types/recharts": "1.1.17",
