@@ -42,10 +42,8 @@ const Head = () => {
 				alert("Error while reading file");
 				return;
 			}
-            // JSON.parse(target.result);
             includeExams(JSON.parse(target.result))
                 .then(res => console.log('imported with success!'));
-            // console.log(target.result);
         };
         reader.readAsText((target as any).files[0]);
     }
@@ -117,7 +115,6 @@ const Body = () => {
     const randomColor = () => '#'+Math.floor(Math.random()*16777215).toString(16);
 
     const legendClick = (even:{dataKey:string}) => {
-        // console.log(even.dataKey);
         setSelectedExam(even.dataKey);
     }
 

@@ -60,49 +60,21 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
     const classes = useStyles();
     const {exams, remove, commit, reset, push, stage} = useContext(Exam);
 
-    // console.log('size:',exams.length);
-
     useEffect(() => {
-/*
-        console.log('head:mount2',{
-            stage,
-            idExam,
-            stageId:stage.id,
-            typeIdEXAM:typeof idExam,
-            verificationA:typeof idExam === 'undefined',
-            verificationB:!!stage.id,
-            verificationC:stage.id !== idExam,
-            typeSTAGEID:typeof stage.id,
-        });
-*/
-        if(typeof idExam === 'undefined' && !!stage.id){
-            //console.log('a');
-            
+        if(typeof idExam === 'undefined' && !!stage.id){        
             commit({
                 id:`${new Date().getTime()}`,
                 tests: [] as IToolsLevel[],
             } as IExame);
-            
         }else if(!!idExam && stage.id !== idExam){
-            // console.log('b');
             const exam = exams.find(({id}) => idExam === id) || {} as IExame;
-            // console.log('c', {exams,exam});
             commit(exam);
         }
         return () => {
             reset();
         };
     }, [exams]);
-/*
-    console.log('head:render',{
-        idExam,
-        stage,
-        typeIdEXAM:typeof idExam,
-        verificationA:typeof idExam === 'undefined',
-        verificationC:stage.id !== idExam,
-        typeSTAGEID:typeof stage.id,
-     });
-*/   
+ 
     const dateFormated = (pdate:number) => {
         const [year, month, day] = new Date(pdate).toISOString().substring(0,10).split('-');
         return `${year}-${month}-${day}`;
@@ -115,7 +87,6 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
     };
 
     const wrapperSave = () => {
-        // console.log(idExam,JSON.stringify(stage));
         push()
             .then(() => setRedirect(true));
     }
@@ -182,11 +153,9 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
     const icons = ['book','chrome_reader_mode','hearing','sms','create'];
     
     const setTestItem = (toolLevel:ELevel, idSkill:string, idTool:string) => {
-        //console.log({toolLevel, stage});
         const {tests = []} = stage;
         if(toolLevel){
             const testIndex = tests.findIndex(test => test.idTool === idTool);
-            //console.log(testIndex);
             if(testIndex > -1 && tests[testIndex].level !== toolLevel){
                 tests[testIndex].level = toolLevel;
                 commit({tests: [...tests]} as IExame);
@@ -204,7 +173,6 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
 
     const skillById = (idSkill:string) => {
         const skill = skills.find((skill) => skill.id === idSkill);
-        // console.log(JSON.stringify(stage));
         if(typeof skill === 'undefined' || !stage){
             return {
                 tools:[],
@@ -226,7 +194,6 @@ const ExamForm:FunctionComponent<State> & {Test:StateTestComponent} = ({idExam})
             }
             tool.level = level;
         });
-        // console.log({idSkill,skill:JSON.stringify(skill),snapshot:JSON.stringify(snapshot)});
         return skill as unknown as ISkill;
     }
 
@@ -286,10 +253,8 @@ const Test:StateTestComponent = ({toolName, levels, level, onChange, idSkill, id
 
     const handleChangeLevel = ({target}: any) => {
         const value = Number(target.value || selectedLevel);
-        // if( value && value !== selectedLevel ){
-            setLevel(value);
-            onChange(value, idSkill, idTool);
-        // }
+        setLevel(value);
+        onChange(value, idSkill, idTool);
     };
 
     return (
