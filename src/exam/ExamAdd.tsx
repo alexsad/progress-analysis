@@ -155,17 +155,18 @@ const Head:FunctionComponent<{idExam:string}> = ({idExam}) => {
                     </IconButton>
                 )}
 
-
-                <IconButton
-                    color="default"
-                    aria-label="Open drawer"
-                    edge="end"
-                    onClick={wrapperSave}
-                >
-                    <Icon 
-                        className={classes.iconStyle} 
-                    >done</Icon>
-                </IconButton>
+                {!idExam && (
+                    <IconButton
+                        color="default"
+                        aria-label="Open drawer"
+                        edge="end"
+                        onClick={wrapperSave}
+                    >
+                        <Icon 
+                            className={classes.iconStyle} 
+                        >done</Icon>
+                    </IconButton>
+                )}
 
                 {redirect && <Redirect to="/" />}
 
