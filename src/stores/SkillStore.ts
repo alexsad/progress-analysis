@@ -8,7 +8,7 @@ interface ISkillStore {
 const useSkill = () => {
     const [skills, setSkills] = useState([] as ISkill[]);
     useEffect(() => {
-       fetch('/data/skills.json')
+       fetch('data/skills.json')
           .then(rs => rs.json())
           .then(data => setSkills([...data]));
     }, []);
