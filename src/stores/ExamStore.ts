@@ -89,11 +89,9 @@ const useExam = (skills: ISkill[]) => {
     }
 
     const commit = (exam: IExame) => {
-        //console.log('commit:', exam);
         setStage(oldStage => {
             const dateTime = new Date().getTime();
             oldStage.date = oldStage.date  || dateTime;
-            //oldStage.tests = oldStage.tests || [];
             oldStage.scores = oldStage.scores || {};
             return {...oldStage, ...exam};
         });

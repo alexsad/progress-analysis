@@ -83,7 +83,7 @@ const Head = () => {
                         color="default"
                         aria-label="Open drawer"
                         edge="end"
-                        download={`${new Date().getTime()}-eng-ana.json`}
+                        download={`${new Date().getTime()}-.exam.json`}
                         href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(exams))}`}
                         component="a"
                     >
